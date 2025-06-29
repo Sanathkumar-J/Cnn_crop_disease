@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Rice Leaf Disease Detector </title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px;
+    }
+
+    h2 {
+      color: #2c3e50;
+    }
+
+    input[type="file"] {
+      margin: 20px 0;
+    }
+
+    img {
+      max-width: 300px;
+      margin: 10px;
+      border-radius: 10px;
+      border: 2px solid #ccc;
+    }
+
+    #prediction {
+      font-size: 1.3em;
+      color: #16a085;
+      margin-top: 20px;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>🌾 Rice Leaf Disease Detection</h2>
+
+  <input type="file" id="imageInput" accept="image/*">
+  <br>
+  <img id="preview" src="#" alt="Image Preview" style="display:none;">
+  <br>
+  <button onclick="uploadImage()">Predict Disease</button>
+
+  <div id="prediction"></div>
+
+  <script>
+    const imageInput = document.getElementById("imageInput");
+    const preview = document.getElementById("preview");
+    const predictionText = document.getElementById("prediction");
+
+    imageInput.addEventListener("change", function () {
+      const file = imageInput.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          preview.src = e.target.result;
+          preview.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    async function uploadImage() {
+      const file = imageInput.files[0];
+      if (!file) {
+        alert("Please select an image.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const response = await fetch("http://127.0.0.1:8000/model", {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+          predictionText.innerText = ` Prediction: ${data.prediction}`;
+        } else {
+          predictionText.innerText = `Error: ${data.error}`;
+        }
+      } catch (err) {
+        predictionText.innerText = `Request failed: ${err}`;
+      }
+    }
+  </script>
+
+</body>
+</html>
